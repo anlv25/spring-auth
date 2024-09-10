@@ -16,6 +16,7 @@ spring:
         format_sql: true
     database: postgresql
     database-platform: org.hibernate.dialect.PostgreSQLDialect
+    defer-datasource-initialization: true
 
 application:
   security:
@@ -24,4 +25,8 @@ application:
       expiration: 86400000 # a day
       refresh-token:
         expiration: 604800000 # 7 days
+management:
+  server:
+    port: 8081
+    address: 127.0.0.1
 
