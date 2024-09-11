@@ -1,5 +1,7 @@
 package com.anlv.security.rule;
 
+import com.anlv.security.role.Role;
+import com.anlv.security.role.RoleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -11,6 +13,47 @@ import java.util.List;
 public class RuleService {
     private final RuleRepository ruleRepository;
     private final RuleRedisRepository ruleRedisRepository;
+    private final RoleRepository roleRepository;
+
+    public List<Rule> getAllRules() {
+        return ruleRepository.findAll();
+    }
+
+    public Rule createRule(RuleRequest ruleRequest) {
+        Rule rule = new Rule();
+        updateRuleFromRequest(rule, ruleRequest);
+        Rule savedRule = ruleRepository.save(rule);
+        updateRuleToRedis();
+        return savedRule;
+    }
+
+    public Rule updateRule(Long id, RuleRequest ruleRequest) {
+        return ruleRepository.findById(id)
+            .map(rule -> {
+                updateRuleFromRequest(rule, ruleRequest);
+                Rule saved = ruleRepository.save(rule);
+                updateRuleToRedis();
+                return saved;
+            })
+            .orElseThrow(() -> new RuntimeException("Rule not found with id: " + id));
+    }
+
+    private void updateRuleFromRequest(Rule rule, RuleRequest ruleRequest) {
+        rule.setExp_path(ruleRequest.getExp_path());
+        rule.setExp_path_fe(ruleRequest.getExp_path_fe());
+        Role role = roleRepository.findById(ruleRequest.getRoleId())
+            .orElseThrow(() -> new RuntimeException("Role not found with id: " + ruleRequest.getRoleId()));
+        rule.setRole(role);
+        rule.setCreateRequest(ruleRequest.isCreateRequest());
+        rule.setUpdateRequest(ruleRequest.isUpdateRequest());
+        rule.setReadRequest(ruleRequest.isReadRequest());
+        rule.setDeleteRequest(ruleRequest.isDeleteRequest());
+    }
+
+    public void deleteRule(Long id) {
+        ruleRepository.deleteById(id);
+        updateRuleToRedis();
+    }
 
     private   List<RuleRedis> convertEntityToRedis(List<Rule> rules) {
         List<RuleRedis> ruleRedises = new ArrayList<>();
