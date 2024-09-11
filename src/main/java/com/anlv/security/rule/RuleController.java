@@ -13,14 +13,11 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class RuleController {
-    private final RuleRedisRepository ruleRedisRepository;
     private final RuleService ruleService;
-    private final RuleRepository ruleRepository;
 
     @PostMapping
     public String updateRuleToRedis() {
-        ruleRedisRepository.deleteAll();
-        ruleRedisRepository.saveAll(ruleService.convertEntityToRedis(ruleRepository.findAll()));
+        ruleService.updateRuleToRedis();
         return "Security configuration has been reset successfully.";
     }
 }

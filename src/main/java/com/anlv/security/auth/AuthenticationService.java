@@ -15,6 +15,9 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -48,22 +51,26 @@ public class AuthenticationService {
   }
 
   public AuthenticationResponse authenticate(AuthenticationRequest request) {
-    authenticationManager.authenticate(
-        new UsernamePasswordAuthenticationToken(
-            request.getEmail(),
-            request.getPassword()
-        )
-    );
-    var user = repository.findByEmail(request.getEmail())
-        .orElseThrow();
-    var jwtToken = jwtService.generateToken(user);
-    var refreshToken = jwtService.generateRefreshToken(user);
-    revokeAllUserTokens(user);
-    saveUserToken(user, jwtToken);
-    return AuthenticationResponse.builder()
-        .accessToken(jwtToken)
+    try {
+        authenticationManager.authenticate(
+            new UsernamePasswordAuthenticationToken(
+                request.getEmail(),
+                request.getPassword()
+            )
+        );
+        var user = repository.findByEmail(request.getEmail())
+            .orElseThrow();
+        var jwtToken = jwtService.generateToken(user);
+        var refreshToken = jwtService.generateRefreshToken(user);
+        revokeAllUserTokens(user);
+        saveUserToken(user, jwtToken);
+        return AuthenticationResponse.builder()
+            .accessToken(jwtToken)
             .refreshToken(refreshToken)
         .build();
+    } catch (BadCredentialsException e) {
+        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Xác thực không thành công", e);
+    }
   }
 
   private void saveUserToken(User user, String jwtToken) {

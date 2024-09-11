@@ -10,8 +10,9 @@ import java.util.List;
 @RequiredArgsConstructor
 public class RuleService {
     private final RuleRepository ruleRepository;
+    private final RuleRedisRepository ruleRedisRepository;
 
-    public  List<RuleRedis> convertEntityToRedis(List<Rule> rules) {
+    private   List<RuleRedis> convertEntityToRedis(List<Rule> rules) {
         List<RuleRedis> ruleRedises = new ArrayList<>();
         for (Rule rule : rules) {
             RuleRedis ruleRedis = new RuleRedis();
@@ -26,5 +27,10 @@ public class RuleService {
             ruleRedises.add(ruleRedis);
         }
         return ruleRedises;
+    }
+
+    public void updateRuleToRedis() {
+        ruleRedisRepository.deleteAll();
+        ruleRedisRepository.saveAll(convertEntityToRedis(ruleRepository.findAll()));
     }
 }

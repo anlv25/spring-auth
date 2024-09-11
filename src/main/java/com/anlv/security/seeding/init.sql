@@ -7,4 +7,4 @@ insert into jwt_security.public._user values(2,2,'user@gmail.com','user','user',
 
 insert into jwt_security.public.rule
 values(true,true,true,true,1,
-       2,'/api/v1/books','');
+       1,'/api/v1/books','');
