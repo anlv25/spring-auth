@@ -2,7 +2,8 @@ package com.anlv.security.role;
 
 
 
-import com.anlv.security.exception.ForeignKeyViolationException;
+
+import com.anlv.security.common.exception.ForeignKeyViolationException;
 import com.anlv.security.role.exeption.DuplicateRoleNameException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;

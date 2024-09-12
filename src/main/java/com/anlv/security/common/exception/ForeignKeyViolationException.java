@@ -1,4 +1,4 @@
-package com.anlv.security.exception;
+package com.anlv.security.common.exception;
 
 public class ForeignKeyViolationException extends RuntimeException {
     public ForeignKeyViolationException(String message) {

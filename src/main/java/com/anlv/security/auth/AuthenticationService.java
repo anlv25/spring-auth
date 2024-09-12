@@ -69,7 +69,7 @@ public class AuthenticationService {
             .refreshToken(refreshToken)
         .build();
     } catch (BadCredentialsException e) {
-        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Xác thực không thành công", e);
+        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Đăng nhập không thành công", e);
     }
   }
 
