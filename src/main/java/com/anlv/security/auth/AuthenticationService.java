@@ -7,6 +7,7 @@ import com.anlv.security.token.TokenRepository;
 import com.anlv.security.token.TokenType;
 import com.anlv.security.user.User;
 import com.anlv.security.user.UserRepository;
+import com.anlv.security.user.UserRespone;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -34,9 +35,8 @@ public class AuthenticationService {
 
   public AuthenticationResponse register(RegisterRequest request) {
     var user = User.builder()
-        .firstname(request.getFirstname())
-        .lastname(request.getLastname())
-        .email(request.getEmail())
+            .fullName(request.getFullName())
+            .email(request.getEmail())
         .password(passwordEncoder.encode(request.getPassword()))
         .role(roleRepository.getReferenceById(2L))
         .build();
@@ -44,10 +44,17 @@ public class AuthenticationService {
     var jwtToken = jwtService.generateToken(user);
     var refreshToken = jwtService.generateRefreshToken(user);
     saveUserToken(savedUser, jwtToken);
+    UserRespone ur = UserRespone.builder()
+            .fullName(savedUser.getFullName())
+            .email(savedUser.getEmail())
+            .image(savedUser.getImage())
+            .role(savedUser.getRole().getName())
+            .build();
     return AuthenticationResponse.builder()
-        .accessToken(jwtToken)
-            .refreshToken(refreshToken)
-        .build();
+          .accessToken(jwtToken)
+          .refreshToken(refreshToken)
+          .user(ur)
+          .build();
   }
 
   public AuthenticationResponse authenticate(AuthenticationRequest request) {
@@ -64,10 +71,17 @@ public class AuthenticationService {
         var refreshToken = jwtService.generateRefreshToken(user);
         revokeAllUserTokens(user);
         saveUserToken(user, jwtToken);
-        return AuthenticationResponse.builder()
-            .accessToken(jwtToken)
-            .refreshToken(refreshToken)
-        .build();
+      UserRespone ur = UserRespone.builder()
+              .fullName(user.getFullName())
+              .email(user.getEmail())
+              .image(user.getImage())
+              .role(user.getRole().getName())
+              .build();
+      return AuthenticationResponse.builder()
+              .accessToken(jwtToken)
+              .refreshToken(refreshToken)
+              .user(ur)
+              .build();
     } catch (BadCredentialsException e) {
         throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Đăng nhập không thành công", e);
     }
@@ -114,9 +128,16 @@ public class AuthenticationService {
         var accessToken = jwtService.generateToken(user);
         revokeAllUserTokens(user);
         saveUserToken(user, accessToken);
+        UserRespone ur = UserRespone.builder()
+                .fullName(user.getFullName())
+                .email(user.getEmail())
+                .image(user.getImage())
+                .role(user.getRole().getName())
+                .build();
         var authResponse = AuthenticationResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
+                .user(ur)
                 .build();
         new ObjectMapper().writeValue(response.getOutputStream(), authResponse);
       }
