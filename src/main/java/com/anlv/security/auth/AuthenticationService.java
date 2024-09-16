@@ -1,5 +1,6 @@
 package com.anlv.security.auth;
 
+import com.anlv.security.auth.exception.EmailAlreadyExistsException;
 import com.anlv.security.config.JwtService;
 import com.anlv.security.role.RoleRepository;
 import com.anlv.security.token.Token;
@@ -22,6 +23,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -33,7 +35,12 @@ public class AuthenticationService {
   private final AuthenticationManager authenticationManager;
   private final RoleRepository roleRepository;
 
-  public AuthenticationResponse register(RegisterRequest request) {
+  public UserRespone register(RegisterRequest request) {
+    // Kiểm tra xem email đã tồn tại chưa
+    if (repository.findByEmail(request.getEmail()).isPresent()) {
+        throw new EmailAlreadyExistsException("Email đã được sử dụng");
+    }
+
     var user = User.builder()
             .fullName(request.getFullName())
             .email(request.getEmail())
@@ -41,20 +48,13 @@ public class AuthenticationService {
         .role(roleRepository.getReferenceById(2L))
         .build();
     var savedUser = repository.save(user);
-    var jwtToken = jwtService.generateToken(user);
-    var refreshToken = jwtService.generateRefreshToken(user);
-    saveUserToken(savedUser, jwtToken);
     UserRespone ur = UserRespone.builder()
             .fullName(savedUser.getFullName())
             .email(savedUser.getEmail())
             .image(savedUser.getImage())
             .role(savedUser.getRole().getName())
             .build();
-    return AuthenticationResponse.builder()
-          .accessToken(jwtToken)
-          .refreshToken(refreshToken)
-          .user(ur)
-          .build();
+    return ur;
   }
 
   public AuthenticationResponse authenticate(AuthenticationRequest request) {

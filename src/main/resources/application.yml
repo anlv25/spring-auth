@@ -29,4 +29,10 @@ management:
   server:
     port: 8081
     address: 127.0.0.1
+server:
+  servlet:
+    encoding:
+      charset: utf-8
+      force: true
+
 
