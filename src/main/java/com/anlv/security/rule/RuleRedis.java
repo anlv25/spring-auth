@@ -9,7 +9,7 @@ import org.springframework.data.redis.core.RedisHash;
 @RedisHash("rule")
 public class RuleRedis {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String exp_path;

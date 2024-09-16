@@ -24,7 +24,7 @@ import java.util.ArrayList;
 public class User implements UserDetails {
 
   @Id
-  @GeneratedValue
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
   private String fullName;
   private String image;
