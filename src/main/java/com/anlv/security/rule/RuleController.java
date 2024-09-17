@@ -15,7 +15,7 @@ public class RuleController {
     private final RuleService ruleService;
 
     @GetMapping
-    public ResponseEntity<List<Rule>> getAllRules() {
+    public ResponseEntity<List<RuleRedis>> getAllRules() {
         return ResponseEntity.ok(ruleService.getAllRules());
     }
 

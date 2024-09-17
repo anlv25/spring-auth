@@ -15,8 +15,9 @@ public class RuleService {
     private final RuleRedisRepository ruleRedisRepository;
     private final RoleRepository roleRepository;
 
-    public List<Rule> getAllRules() {
-        return ruleRepository.findAll();
+    public List<RuleRedis> getAllRules() {
+
+        return (List<RuleRedis>) ruleRedisRepository.findAll();
     }
 
     public Rule createRule(RuleRequest ruleRequest) {

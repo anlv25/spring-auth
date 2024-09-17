@@ -1,9 +1,11 @@
 package com.anlv.security.product;
 
+import com.anlv.security.category.CategoryRepository;
 import com.anlv.security.image.ProductImage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
 import java.util.List;
 import java.util.Optional;
 import java.io.IOException;
@@ -18,6 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class ProductService {
 
     private final ProductRepository repository;
+    private final CategoryRepository categoryRepository;
 
     public List<Product> getAllProducts() {
         return repository.findAll();
@@ -25,10 +28,6 @@ public class ProductService {
 
     public Optional<Product> getProductById(Long id) {
         return repository.findById(id);
-    }
-
-    public Product createProduct(Product product) {
-        return repository.save(product);
     }
 
     public Product updateProduct(Long id, ProductUpdateRequest request) throws IOException {
@@ -39,11 +38,22 @@ public class ProductService {
         product.setDescription(request.getDescription());
         product.setPrice(request.getPrice());
         product.setStockQuantity(request.getStockQuantity());
-        product.setCategory(request.getCategory());
+        
+        // Tìm và set Category dựa trên categoryId
+        Category category = categoryRepository.findById(request.getCategoryId())
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy danh mục"));
+        product.setCategory(category);
 
         // Xóa các hình ảnh được chỉ định
         if (request.getImagesToRemove() != null && !request.getImagesToRemove().isEmpty()) {
-            product.getImages().removeIf(image -> request.getImagesToRemove().contains(image.getId()));
+            product.getImages().removeIf(image -> {
+                if(request.getImagesToRemove().contains(image.getId())){
+                    deleteProductImages(image.getImageUrl());
+                    return true;
+                }
+                return false;
+            });
+            
         }
 
         // Thêm hình ảnh mới
@@ -64,10 +74,6 @@ public class ProductService {
         return repository.save(product);
     }
 
-    public Product updateProduct(Product product) {
-        return repository.save(product);
-    }
-
     public void deleteProduct(Long id) {
         repository.deleteById(id);
     }
@@ -78,7 +84,8 @@ public class ProductService {
         product.setDescription(request.getDescription());
         product.setPrice(request.getPrice());
         product.setStockQuantity(request.getStockQuantity());
-        product.setCategory(request.getCategory());
+        product.setCategory(categoryRepository.findById(request.getCategoryId())
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy danh mục")));
 
         Product savedProduct = repository.save(product);
 
@@ -88,7 +95,6 @@ public class ProductService {
                 String uploadDir = "product-images/" + savedProduct.getId();
 
                 FileUploadUtil.saveFile(uploadDir, fileName, imageFile);
-
                 ProductImage image = new ProductImage();
                 image.setProduct(savedProduct);
                 image.setImageUrl(uploadDir + "/" + fileName);
@@ -98,5 +104,12 @@ public class ProductService {
         }
 
         return savedProduct;
+    }
+
+    public void deleteProductImages(String imageUrl) {
+        File directory = new File(imageUrl);
+        if (directory.exists()) {
+            directory.delete();
+        }
     }
 }

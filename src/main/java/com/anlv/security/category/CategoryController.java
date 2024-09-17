@@ -11,42 +11,31 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CategoryController {
 
-    private final CategoryService service;
+    private final CategoryService categoryService;
+
+    @PostMapping
+    public ResponseEntity<Category> createCategory(@RequestBody CategoryRequest request) {
+        return ResponseEntity.ok(categoryService.createCategory(request));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Category> updateCategory(@PathVariable Long id, @RequestBody CategoryRequest request) {
+        return ResponseEntity.ok(categoryService.updateCategory(id, request));
+    }
 
     @GetMapping
     public ResponseEntity<List<Category>> getAllCategories() {
-        return ResponseEntity.ok(service.getAllCategories());
+        return ResponseEntity.ok(categoryService.getAllCategories());
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Category> getCategoryById(@PathVariable Long id) {
-        return service.getCategoryById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
-
-    @PostMapping
-    public ResponseEntity<Category> createCategory(@RequestBody Category category) {
-        return ResponseEntity.ok(service.createCategory(category));
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<Category> updateCategory(@PathVariable Long id, @RequestBody Category category) {
-        return service.getCategoryById(id)
-                .map(existingCategory -> {
-                    category.setId(id);
-                    return ResponseEntity.ok(service.updateCategory(category));
-                })
-                .orElse(ResponseEntity.notFound().build());
+        return ResponseEntity.ok(categoryService.getCategoryById(id));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteCategory(@PathVariable Long id) {
-        return service.getCategoryById(id)
-                .map(category -> {
-                    service.deleteCategory(id);
-                    return ResponseEntity.ok().build();
-                })
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<Void> deleteCategory(@PathVariable Long id) {
+        categoryService.deleteCategory(id);
+        return ResponseEntity.noContent().build();
     }
 }

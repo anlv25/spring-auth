@@ -10,25 +10,52 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class CategoryService {
 
-    private final CategoryRepository repository;
+    private final CategoryRepository categoryRepository;
 
     public List<Category> getAllCategories() {
-        return repository.findAll();
+        return categoryRepository.findAll();
     }
 
-    public Optional<Category> getCategoryById(Long id) {
-        return repository.findById(id);
+    public Category getCategoryById(Long id) {
+        return categoryRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Category not found"));
     }
 
-    public Category createCategory(Category category) {
-        return repository.save(category);
+    public Category createCategory(CategoryRequest request) {
+        Category parent = null;
+        if (request.getParentId() != null && request.getParentId() > 0) {
+            parent = categoryRepository.findById(request.getParentId())
+                    .orElseThrow(() -> new RuntimeException("Parent category not found"));
+        }
+
+        Category category = Category.builder()
+                .name(request.getName())
+                .parent(parent)
+                .build();
+
+        return categoryRepository.save(category);
     }
 
-    public Category updateCategory(Category category) {
-        return repository.save(category);
+    public Category updateCategory(Long id, CategoryRequest request) {
+        Category existingCategory = categoryRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Category not found"));
+
+        Category parent = null;
+        if (request.getParentId() != null) {
+            parent = categoryRepository.findById(request.getParentId())
+                    .orElseThrow(() -> new RuntimeException("Parent category not found"));
+        }
+
+        existingCategory = Category.builder()
+                .id(existingCategory.getId())
+                .name(request.getName())
+                .parent(parent)
+                .build();
+
+        return categoryRepository.save(existingCategory);
     }
 
     public void deleteCategory(Long id) {
-        repository.deleteById(id);
+        categoryRepository.deleteById(id);
     }
 }

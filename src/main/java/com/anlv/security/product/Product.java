@@ -2,6 +2,7 @@ package com.anlv.security.product;
 
 import com.anlv.security.category.Category;
 import com.anlv.security.image.ProductImage;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -63,5 +64,6 @@ public class Product {
     private Long lastModifiedBy;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private List<ProductImage> images = new ArrayList<>();
 }

@@ -13,6 +13,6 @@ public class ProductCreateRequest {
     private String description;
     private BigDecimal price;
     private Integer stockQuantity;
-    private Category category;
+    private Long categoryId;
     private List<MultipartFile> images;
 }
