@@ -2,6 +2,7 @@ package com.anlv.security.product;
 
 import com.anlv.security.category.CategoryRepository;
 import com.anlv.security.image.ProductImage;
+import com.anlv.security.minio.ObjectStorageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -12,6 +13,7 @@ import java.io.IOException;
 
 import com.anlv.security.category.Category;
 import com.anlv.security.util.FileUploadUtil;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -21,6 +23,7 @@ public class ProductService {
 
     private final ProductRepository repository;
     private final CategoryRepository categoryRepository;
+    private final ObjectStorageService objectStorageService;
 
     public List<ProductDTO> getAllProducts() {
         return repository.findAll().stream()
@@ -60,6 +63,7 @@ public class ProductService {
 
         // Thêm hình ảnh mới
         if (request.getNewImages() != null && !request.getNewImages().isEmpty()) {
+
             for (MultipartFile imageFile : request.getNewImages()) {
                 String fileName = StringUtils.cleanPath(imageFile.getOriginalFilename());
                 String uploadDir = "product-images/" + product.getId();
@@ -79,7 +83,7 @@ public class ProductService {
     public void deleteProduct(Long id) {
         repository.deleteById(id);
     }
-
+    @Transactional
     public Product createProductWithImages(ProductCreateRequest request) throws IOException {
         Product product = new Product();
         product.setName(request.getName());
@@ -97,9 +101,11 @@ public class ProductService {
                 String uploadDir = "product-images/" + savedProduct.getId();
 
                 FileUploadUtil.saveFile(uploadDir, fileName, imageFile);
+                objectStorageService.uploadFile(imageFile);
                 ProductImage image = new ProductImage();
                 image.setProduct(savedProduct);
                 image.setImageUrl(uploadDir + "/" + fileName);
+
                 savedProduct.getImages().add(image);
             }
             savedProduct = repository.save(savedProduct);

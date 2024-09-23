@@ -36,6 +36,10 @@ server:
     encoding:
       charset: utf-8
       force: true
+object-storage:
+  endpoint: s3.cloudfly.vn
+  accessKey: Y6YD1DPIFL02O3LTNMFI
+  secretKey: txmXGuB8tUixjP82DS0qIg2JqNoyNV6vWFvwSrFV
 
 pre-api: /api/v1
 
