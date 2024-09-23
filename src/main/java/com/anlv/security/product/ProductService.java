@@ -1,7 +1,6 @@
 package com.anlv.security.product;
 
 import com.anlv.security.category.CategoryRepository;
-import com.anlv.security.image.ProductImage;
 import com.anlv.security.minio.ObjectStorageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -53,7 +52,7 @@ public class ProductService {
         if (request.getImagesToRemove() != null && !request.getImagesToRemove().isEmpty()) {
             product.getImages().removeIf(image -> {
                 if(request.getImagesToRemove().contains(image.getId())){
-                    deleteProductImages(image.getImageUrl());
+                    objectStorageService.deleteFile(image.getImageName());
                     return true;
                 }
                 return false;
@@ -65,15 +64,12 @@ public class ProductService {
         if (request.getNewImages() != null && !request.getNewImages().isEmpty()) {
 
             for (MultipartFile imageFile : request.getNewImages()) {
-                String fileName = StringUtils.cleanPath(imageFile.getOriginalFilename());
-                String uploadDir = "product-images/" + product.getId();
 
-                FileUploadUtil.saveFile(uploadDir, fileName, imageFile);
-
-                ProductImage image = new ProductImage();
-                image.setProduct(product);
-                image.setImageUrl(uploadDir + "/" + fileName);
-                product.getImages().add(image);
+                ProductImage image = objectStorageService.uploadFile(imageFile);
+                if(image != null){
+                    image.setProduct(product);
+                    product.getImages().add(image);
+                }
             }
         }
 
@@ -81,7 +77,16 @@ public class ProductService {
     }
 
     public void deleteProduct(Long id) {
-        repository.deleteById(id);
+        Optional<Product> oProduct = repository.findById(id);
+        if (oProduct.isPresent()) {
+            Product product = oProduct.get();
+
+            for (ProductImage image : oProduct.get().getImages()) {
+                objectStorageService.deleteFile(image.getImageName());
+            }
+            product.getImages().removeAll(product.getImages());
+            repository.delete(oProduct.get());
+        }
     }
     @Transactional
     public Product createProductWithImages(ProductCreateRequest request) throws IOException {
@@ -97,16 +102,11 @@ public class ProductService {
 
         if (request.getImages() != null && !request.getImages().isEmpty()) {
             for (MultipartFile imageFile : request.getImages()) {
-                String fileName = StringUtils.cleanPath(imageFile.getOriginalFilename());
-                String uploadDir = "product-images/" + savedProduct.getId();
-
-                FileUploadUtil.saveFile(uploadDir, fileName, imageFile);
-                objectStorageService.uploadFile(imageFile);
-                ProductImage image = new ProductImage();
-                image.setProduct(savedProduct);
-                image.setImageUrl(uploadDir + "/" + fileName);
-
-                savedProduct.getImages().add(image);
+                ProductImage image = objectStorageService.uploadFile(imageFile);
+                if(image != null){
+                    image.setProduct(savedProduct);
+                    savedProduct.getImages().add(image);
+                }
             }
             savedProduct = repository.save(savedProduct);
         }
@@ -120,4 +120,6 @@ public class ProductService {
             directory.delete();
         }
     }
+
+
 }

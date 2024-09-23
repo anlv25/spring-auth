@@ -1,7 +1,6 @@
 package com.anlv.security.product;
 
 import com.anlv.security.category.Category;
-import com.anlv.security.image.ProductImage;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

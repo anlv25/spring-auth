@@ -1,6 +1,5 @@
 package com.anlv.security.product;
 
-import com.anlv.security.image.ProductImage;
 import lombok.Data;
 
 import java.math.BigDecimal;

@@ -11,6 +11,7 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: false
+
     properties:
       hibernate:
         format_sql: true
@@ -28,6 +29,9 @@ application:
       refresh-token:
         expiration: 604800000 # 7 days
 management:
+  endpoint:
+    health:
+      show-details: always
   server:
     port: 8081
     address: 127.0.0.1
@@ -36,10 +40,12 @@ server:
     encoding:
       charset: utf-8
       force: true
+
 object-storage:
   endpoint: s3.cloudfly.vn
   accessKey: Y6YD1DPIFL02O3LTNMFI
   secretKey: txmXGuB8tUixjP82DS0qIg2JqNoyNV6vWFvwSrFV
+  bucketName: anlv
 
 pre-api: /api/v1
 

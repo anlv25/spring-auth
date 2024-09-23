@@ -1,6 +1,5 @@
-package com.anlv.security.image;
+package com.anlv.security.product;
 
-import com.anlv.security.product.Product;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -34,7 +33,12 @@ public class ProductImage {
     private Product product;
 
     @Column(nullable = false)
+    @JoinColumn(name = "image_url")
     private String imageUrl;
+
+    @Column(nullable = false)
+    @JoinColumn(name = "image_name")
+    private String imageName;
 
     @CreatedDate
     @Column(nullable = false, updatable = false)
