@@ -34,7 +34,7 @@ public class DynamicAuthorizationFilter extends OncePerRequestFilter {
             "/swagger-ui.html",
             "/actuator/**",
             "/rules",
-            "/**"};
+            };
 
 
     public DynamicAuthorizationFilter(RuleRedisRepository ruleRedisRepository) {

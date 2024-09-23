@@ -1,6 +1,7 @@
 package com.anlv.security.auth;
 
 import com.anlv.security.user.UserRespone;
+import com.anlv.security.util.ResponseEntityExp;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +20,7 @@ import com.anlv.security.auth.exception.EmailAlreadyExistsException;
 import java.io.IOException;
 
 @RestController
-@RequestMapping("/api/v1/auth")
+@RequestMapping("${pre-api}/auth")
 @RequiredArgsConstructor
 public class AuthenticationController {
 
@@ -33,11 +34,9 @@ public class AuthenticationController {
         UserRespone response = service.register(request);
         return ResponseEntity.ok(response);
     } catch (EmailAlreadyExistsException e) {
-      HttpHeaders headers = new HttpHeaders();
-      headers.setContentType(MediaType.APPLICATION_JSON);
-        return ResponseEntity.status(HttpStatus.CONFLICT).headers(headers).body("Email đã tồn tại!");
+      return ResponseEntityExp.get(HttpStatus.CONFLICT,"Email đã tồn tại!");
     } catch (Exception e) {
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Có lỗi xảy ra khi đăng ký");
+      return ResponseEntityExp.get(HttpStatus.INTERNAL_SERVER_ERROR,"Có lỗi xảy ra khi đăng ký");
     }
   }
   @PostMapping("/authenticate")

@@ -13,9 +13,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.server.ResponseStatusException;
@@ -34,6 +36,11 @@ public class AuthenticationService {
   private final JwtService jwtService;
   private final AuthenticationManager authenticationManager;
   private final RoleRepository roleRepository;
+
+  @Value("${application.security.jwt.expiration}")
+  private long accessTokenExpiration;
+  @Value("${application.security.jwt.refresh-token.expiration}")
+  private long refreshTokenExpiration;
 
   public UserRespone register(RegisterRequest request) {
     // Kiểm tra xem email đã tồn tại chưa
@@ -59,12 +66,13 @@ public class AuthenticationService {
 
   public AuthenticationResponse authenticate(AuthenticationRequest request) {
     try {
-        authenticationManager.authenticate(
+         authenticationManager.authenticate(
             new UsernamePasswordAuthenticationToken(
                 request.getEmail(),
                 request.getPassword()
             )
         );
+
         var user = repository.findByEmail(request.getEmail())
             .orElseThrow();
         var jwtToken = jwtService.generateToken(user);
@@ -80,6 +88,8 @@ public class AuthenticationService {
       return AuthenticationResponse.builder()
               .accessToken(jwtToken)
               .refreshToken(refreshToken)
+              .accessTokenExpires((System.currentTimeMillis() + accessTokenExpiration)/1000)
+              .refreshTokenExpires((System.currentTimeMillis() + refreshTokenExpiration)/1000)
               .user(ur)
               .build();
     } catch (BadCredentialsException e) {
@@ -137,6 +147,8 @@ public class AuthenticationService {
         var authResponse = AuthenticationResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
+                .accessTokenExpires((System.currentTimeMillis() + accessTokenExpiration)/1000)
+                .refreshTokenExpires((System.currentTimeMillis() + refreshTokenExpiration)/1000)
                 .user(ur)
                 .build();
         new ObjectMapper().writeValue(response.getOutputStream(), authResponse);

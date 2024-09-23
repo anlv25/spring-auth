@@ -22,12 +22,14 @@ public class ProductService {
     private final ProductRepository repository;
     private final CategoryRepository categoryRepository;
 
-    public List<Product> getAllProducts() {
-        return repository.findAll();
+    public List<ProductDTO> getAllProducts() {
+        return repository.findAll().stream()
+                .map(ProductDTO::new)
+                .toList();
     }
 
-    public Optional<Product> getProductById(Long id) {
-        return repository.findById(id);
+    public Optional<ProductDTO> getProductById(Long id) {
+        return repository.findById(id).map(ProductDTO::new);
     }
 
     public Product updateProduct(Long id, ProductUpdateRequest request) throws IOException {
