@@ -1,9 +1,9 @@
-package com.anlv.security.rule;
+package com.anlv.security.permission;
 
 import lombok.Data;
 
 @Data
-public class RuleRequest {
+public class PermissionRequest {
     private String exp_path;
     private String exp_path_fe;
     private Long roleId;

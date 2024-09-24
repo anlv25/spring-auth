@@ -1,4 +1,12 @@
 spring:
+  mail:
+    host: smtp.gmail.com # Hoặc máy chủ SMTP bạn đang sử dụng
+    port: 587
+    username: anlv2511.it@gmail.com # Địa chỉ email của bạn
+    password: qmkm vbep cxzq egap  # Mật khẩu email của bạn
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
   data:
     redis:
       url: redis://default:8RzfG5vYnmyz1whV8szTjI3aKIzf9bGF@redis-15906.c302.asia-northeast1-1.gce.redns.redis-cloud.com:15906
@@ -18,9 +26,9 @@ spring:
     database: postgresql
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     defer-datasource-initialization: true
-  web:
-    resources:
-      static-locations: file:./product-images/,classpath:/static/
+#  web:
+#    resources:
+#      static-locations: file:./product-images/,classpath:/static/
 application:
   security:
     jwt:
@@ -40,6 +48,8 @@ server:
     encoding:
       charset: utf-8
       force: true
+
+
 
 object-storage:
   endpoint: s3.cloudfly.vn

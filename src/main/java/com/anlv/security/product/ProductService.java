@@ -1,7 +1,7 @@
 package com.anlv.security.product;
 
 import com.anlv.security.category.CategoryRepository;
-import com.anlv.security.minio.ObjectStorageService;
+import com.anlv.security.s3storage.ObjectStorageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -11,9 +11,7 @@ import java.util.Optional;
 import java.io.IOException;
 
 import com.anlv.security.category.Category;
-import com.anlv.security.util.FileUploadUtil;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service

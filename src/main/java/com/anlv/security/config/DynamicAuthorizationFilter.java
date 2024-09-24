@@ -1,11 +1,12 @@
 package com.anlv.security.config;
 
-import com.anlv.security.rule.RuleRedis;
-import com.anlv.security.rule.RuleRedisRepository;
+import com.anlv.security.permission.PermissionRedis;
+import com.anlv.security.permission.PermissionRedisRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -18,9 +19,10 @@ import java.util.Arrays;
 
 public class DynamicAuthorizationFilter extends OncePerRequestFilter {
 
-    private final RuleRedisRepository ruleRedisRepository;
+    private final PermissionRedisRepository permissionRedisRepository;
     private final AntPathMatcher pathMatcher = new AntPathMatcher();
-
+    @Value("${pre-api}")
+    private static String prefix;
     private static final String[] WHITE_LIST_URL = {"/api/v1/auth/**",
             "/v2/api-docs",
             "/v3/api-docs",
@@ -34,11 +36,12 @@ public class DynamicAuthorizationFilter extends OncePerRequestFilter {
             "/swagger-ui.html",
             "/actuator/**",
             "/rules",
+            "/api/v1/email/**"
             };
 
 
-    public DynamicAuthorizationFilter(RuleRedisRepository ruleRedisRepository) {
-        this.ruleRedisRepository = ruleRedisRepository;
+    public DynamicAuthorizationFilter(PermissionRedisRepository permissionRedisRepository) {
+        this.permissionRedisRepository = permissionRedisRepository;
     }
 
     @Override
@@ -54,7 +57,7 @@ public class DynamicAuthorizationFilter extends OncePerRequestFilter {
 
         String method = request.getMethod();
 
-        List<RuleRedis> rules = (List<RuleRedis>) ruleRedisRepository.findAll();
+        List<PermissionRedis> rules = (List<PermissionRedis>) permissionRedisRepository.findAll();
 
         boolean isAuthorized = checkAuthorization(rules, requestPath, method);
 
@@ -72,13 +75,13 @@ public class DynamicAuthorizationFilter extends OncePerRequestFilter {
                      .anyMatch(pattern -> pathMatcher.match(pattern, requestPath));
     }
 
-    private boolean checkAuthorization(List<RuleRedis> rules, String requestPath, String method) {
+    private boolean checkAuthorization(List<PermissionRedis> rules, String requestPath, String method) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
             return false;
         }
 
-        for (RuleRedis rule : rules) {
+        for (PermissionRedis rule : rules) {
             if (pathMatcher.match(rule.getExp_path(), requestPath)) {
                 switch (method) {
                     case "GET":

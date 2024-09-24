@@ -1,4 +1,4 @@
-package com.anlv.security.rule;
+package com.anlv.security.permission;
 
 import com.anlv.security.role.Role;
 import jakarta.persistence.*;
@@ -6,8 +6,8 @@ import lombok.Data;
 import org.springframework.data.redis.core.RedisHash;
 
 @Data
-@RedisHash("rule")
-public class RuleRedis {
+@RedisHash("permission")
+public class PermissionRedis {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
