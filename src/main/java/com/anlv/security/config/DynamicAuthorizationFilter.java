@@ -6,6 +6,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
@@ -16,13 +17,11 @@ import org.springframework.util.AntPathMatcher;
 import java.io.IOException;
 import java.util.List;
 import java.util.Arrays;
-
+@Slf4j
 public class DynamicAuthorizationFilter extends OncePerRequestFilter {
 
     private final PermissionRedisRepository permissionRedisRepository;
     private final AntPathMatcher pathMatcher = new AntPathMatcher();
-    @Value("${pre-api}")
-    private static String prefix;
     private static final String[] WHITE_LIST_URL = {"/api/v1/auth/**",
             "/v2/api-docs",
             "/v3/api-docs",
@@ -35,8 +34,7 @@ public class DynamicAuthorizationFilter extends OncePerRequestFilter {
             "/webjars/**",
             "/swagger-ui.html",
             "/actuator/**",
-            "/rules",
-            "/api/v1/email/**"
+            "/api/v1/permissions",
             };
 
 
@@ -47,15 +45,14 @@ public class DynamicAuthorizationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-        
+        String method = request.getMethod();
+        String ipAddress = request.getRemoteAddr();
         String requestPath = request.getRequestURI();
-
+        log.info("{}: {} {}", ipAddress, method, requestPath);
         if (isWhitelisted(requestPath)) {
             filterChain.doFilter(request, response);
             return;
         }
-
-        String method = request.getMethod();
 
         List<PermissionRedis> rules = (List<PermissionRedis>) permissionRedisRepository.findAll();
 

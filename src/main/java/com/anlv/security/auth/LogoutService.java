@@ -1,4 +1,4 @@
-package com.anlv.security.config;
+package com.anlv.security.auth;
 
 import com.anlv.security.token.TokenRepository;
 import jakarta.servlet.http.HttpServletRequest;

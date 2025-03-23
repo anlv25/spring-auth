@@ -1,5 +1,6 @@
 package com.anlv.security.permission;
 
+import com.anlv.security.common.ResponseOK;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -36,8 +37,8 @@ public class PermissionController {
     }
 
     @PostMapping("/update-redis")
-    public ResponseEntity<String> updateRuleToRedis() {
+    public ResponseEntity<?> updateRuleToRedis() {
         permissionService.updateRuleToRedis();
-        return ResponseEntity.ok("Security configuration has been reset successfully.");
+        return ResponseEntity.ok( new ResponseOK("Security configuration has been reset successfully."));
     }
 }

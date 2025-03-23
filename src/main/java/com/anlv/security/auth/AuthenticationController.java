@@ -1,64 +1,71 @@
 package com.anlv.security.auth;
 
+import com.anlv.security.common.ResponseOK;
+import com.anlv.security.otp.OtpRequest;
 import com.anlv.security.user.UserRespone;
 import com.anlv.security.util.ResponseEntityExp;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpHeaders;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.server.ResponseStatusException;
-import com.anlv.security.auth.exception.EmailAlreadyExistsException;
-
-import java.io.IOException;
+import com.anlv.security.common.exception.EmailAlreadyExistsException;
 
 @RestController
 @RequestMapping("${pre-api}/auth")
 @RequiredArgsConstructor
+@Slf4j
 public class AuthenticationController {
 
   private final AuthenticationService service;
+  private final LogoutService logoutService;
 
   @PostMapping("/register")
   public ResponseEntity<?> register(
       @RequestBody RegisterRequest request
   ) {
-    try {
         UserRespone response = service.register(request);
         return ResponseEntity.ok(response);
-    } catch (EmailAlreadyExistsException e) {
-      return ResponseEntityExp.get(HttpStatus.CONFLICT,"Email đã tồn tại!");
-    } catch (Exception e) {
-      return ResponseEntityExp.get(HttpStatus.INTERNAL_SERVER_ERROR,"Có lỗi xảy ra khi đăng ký");
-    }
+
   }
   @PostMapping("/authenticate")
   public ResponseEntity<?> authenticate(
-      @RequestBody AuthenticationRequest request
+      @RequestBody AuthenticationRequest request,
+      HttpServletRequest httpServletRequest
   ) {
-    try {
-        return ResponseEntity.ok(service.authenticate(request));
-    } catch (ResponseStatusException e) {
-        return ResponseEntity.status(e.getStatusCode()).body(e.getReason());
-    } catch (Exception e) {
-      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).contentType(MediaType.valueOf(MediaType.APPLICATION_JSON_VALUE)).body("Có gì đó sai sai!");
-    }
+        return ResponseEntity.ok(service.authenticate(request,httpServletRequest.getRemoteAddr()));
   }
 
   @PostMapping("/refresh-token")
-  public void refreshToken(
-      HttpServletRequest request,
-      HttpServletResponse response
-  ) throws IOException {
-    service.refreshToken(request, response);
+  public ResponseEntity<?> refreshToken(@RequestBody RefreshRequest request, HttpServletRequest httpServletRequest) {
+    return ResponseEntity.ok(service.refreshToken(request.getRefreshToken(), httpServletRequest.getRemoteAddr()));
   }
 
+  @PostMapping("/verify-otp")
+  public ResponseEntity<?> verifyOtp(@RequestBody OtpRequest otpRequest) {
+    return service.verifyOtp(otpRequest.getEmail(), otpRequest.getOtp());
+  }
+  @PostMapping("/logout")
+  public void logout(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
+    logoutService.logout(request, response, authentication);
+  }
+  @PostMapping("/re-password")
+  public ResponseEntity<?> verifyOtpRePass(@RequestBody  RePasswordRequest rePasswordRequest) {
+    String rs = service.rePassword(rePasswordRequest.getEmail());
+    return ResponseEntityExp.get(HttpStatus.OK, new ResponseOK(rs));
+  }
 
+  @PostMapping("/verify-otp-repass")
+  public ResponseEntity<?> verifyOtp(@RequestBody RePasswordVerifyRequest rePasswordVerifyRequest) {
+    String rs = service.verifyOtpRePass(rePasswordVerifyRequest);
+    return ResponseEntityExp.get(HttpStatus.OK,new ResponseOK(rs));
+  }
 }

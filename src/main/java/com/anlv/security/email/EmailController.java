@@ -17,4 +17,6 @@ public class EmailController {
         emailService.sendOtp(email, StringUtil.generateOtp());
         return ResponseEntity.ok("oce");
     }
+
+
 }
